@@ -9,7 +9,6 @@ const Login = () => {
   const { isAuthenticated, setIsAuthenticated } = useContext(Context);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigateTo = useNavigate();
 
@@ -19,7 +18,7 @@ const Login = () => {
     try {
       const response = await axios.post(
         "http://localhost:4000/api/v1/user/login",
-        { email, password, confirmPassword, role: "Admin" },
+        { email, password, role: "Admin" },
         {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
@@ -61,12 +60,6 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-          />
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirm Password"
           />
           <div style={{ justifyContent: "center", alignItems: "center" }}>
             <button type="submit">Login</button>
