@@ -25,7 +25,10 @@ export const generateToken = (user, message, statusCode, res) => {
     const obj = typeof userDoc.toObject === "function" ? userDoc.toObject() : { ...userDoc };
 
     // Only expose safe fields
-    const safeFields = ["_id", "name", "email", "role"];
+
+    const safeFields = ["_id", "firstName", "lastName", "email", "role"];
+
+
     return safeFields.reduce((acc, key) => {
       if (obj[key] !== undefined) acc[key] = obj[key];
       return acc;

@@ -14,42 +14,28 @@ const validateEmail = (email) => {
 };
 
 export const patientRegister = catchAsyncErrors(async (req, res, next) => {
-  const {
-    firstName,
-    lastName,
-    email,
-    phone,
-    password,
-    gender,
-    aadhar,
-    dob,
-    role,
-  } = req.body;
-  if (
-    !firstName ||
-    !lastName ||
-    !email ||
-    !phone ||
-    !password ||
-    !gender ||
-    !aadhar ||
-    !dob ||
-    !role
-  ) {
+  const { firstName, lastName, email, phone, password, gender, aadhar, dob } =
+    req.body;
+
+  // Validate required fields
+  if (!firstName || !lastName || !email || !phone || !password || !gender || !aadhar || !dob) {
     return next(new ErrorHandler("Please Fill Full Form!", 400));
   }
 
+  // Validate email
   const safeEmail = validateEmail(email);
   if (!safeEmail) {
     return next(new ErrorHandler("Invalid email format!", 400));
   }
 
-  let user = await User.findOne({ email: { $eq: safeEmail } });
-  if (user) {
+  // Check if user already exists
+  const userExists = await User.findOne({ email: { $eq: safeEmail } });
+  if (userExists) {
     return next(new ErrorHandler("User already registered with this email!", 400));
   }
 
-  user = await User.create({
+  // Force role to "Patient" — ignore any client-supplied role
+  const user = await User.create({
     firstName,
     lastName,
     email: safeEmail,
@@ -58,8 +44,10 @@ export const patientRegister = catchAsyncErrors(async (req, res, next) => {
     gender,
     dob,
     aadhar,
-    role,
+    role: "Patient",
   });
+
+  // Generate JWT cookie
   generateToken(user, "User Registered", 200, res);
 });
 
