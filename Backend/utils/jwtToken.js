@@ -1,29 +1,35 @@
 export const generateToken = (user, message, statusCode, res) => {
-  // create token
   const token = user.generateJsonWebToken();
-
-  // choose cookie name
   const cookieName = user.role === "Admin" ? "adminToken" : "patientToken";
 
-  // ensure numeric cookie expiry days (fallback to 7 days if env missing)
-  const expireDays = Number(process.env.COOKIE_EXPIRE) || 7;
-  const expires = new Date(Date.now() + expireDays * 24 * 60 * 60 * 1000);
+  // safer: parseInt with radix, fallback to 7 days
+  const expireDays = parseInt(process.env.COOKIE_EXPIRE, 10);
+  const expires = new Date(Date.now() + (isNaN(expireDays) ? 7 : expireDays) * 24 * 60 * 60 * 1000);
 
-  // cookie options: httpOnly always, secure in production, sameSite recommended
+  // configurable sameSite via env
+  const sameSite = process.env.COOKIE_SAMESITE || "Lax";
+
   const cookieOptions = {
     expires,
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // only over HTTPS in prod
-    sameSite: "Lax" // or "Strict" depending on your cross-site requirements
+    secure: process.env.NODE_ENV === "production",
+    sameSite
   };
 
-  // produce a safe user object (remove sensitive fields)
-  // if `user` is a Mongoose document, use toObject(); otherwise shallow clone
-  const userObj = typeof user.toObject === "function" ? user.toObject() : { ...user };
-  // remove sensitive fields explicitly
-  const { password, __v, resetPasswordToken, resetPasswordExpires, ...safeUser } = userObj;
+  // ✅ Whitelist approach for user fields
+  const whitelistUser = (userDoc) => {
+    const obj = typeof userDoc.toObject === "function" ? userDoc.toObject() : { ...userDoc };
 
-  // set cookie and return minimal info (no token in JSON body)
+    // Only expose safe fields (expand this list as needed)
+    const safeFields = ["_id", "name", "email", "role"];
+    return safeFields.reduce((acc, key) => {
+      if (obj[key] !== undefined) acc[key] = obj[key];
+      return acc;
+    }, {});
+  };
+
+  const safeUser = whitelistUser(user);
+
   return res
     .status(statusCode)
     .cookie(cookieName, token, cookieOptions)
