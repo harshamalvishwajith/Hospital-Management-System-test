@@ -13,6 +13,26 @@ const validateEmail = (email) => {
   return validator.normalizeEmail(email);
 };
 
+// Helper to validate password strength
+const validatePassword = (password) => {
+  if (typeof password !== "string") {
+    return false;
+  }
+  
+  // Check minimum length
+  if (password.length < 8) {
+    return false;
+  }
+  
+  // Check for required character types
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const hasSpecialChar = /[@$!%*?&]/.test(password);
+  
+  return hasUppercase && hasLowercase && hasNumber && hasSpecialChar;
+};
+
 export const patientRegister = catchAsyncErrors(async (req, res, next) => {
   const { firstName, lastName, email, phone, password, gender, aadhar, dob } =
     req.body;
@@ -26,6 +46,11 @@ export const patientRegister = catchAsyncErrors(async (req, res, next) => {
   const safeEmail = validateEmail(email);
   if (!safeEmail) {
     return next(new ErrorHandler("Invalid email format!", 400));
+  }
+
+  // Validate password strength
+  if (!validatePassword(password)) {
+    return next(new ErrorHandler("Password must be at least 8 characters long and contain uppercase, lowercase, number and special character!", 400));
   }
 
   // Check if user already exists
@@ -98,6 +123,11 @@ export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
   const safeEmail = validateEmail(email);
   if (!safeEmail) {
     return next(new ErrorHandler("Invalid email format!", 400));
+  }
+
+  // Validate password strength
+  if (!validatePassword(password)) {
+    return next(new ErrorHandler("Password must be at least 8 characters long and contain uppercase, lowercase, number and special character!", 400));
   }
 
   const isRegistered = await User.findOne({ email: { $eq: safeEmail } });
@@ -208,6 +238,11 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
   const safeEmail = validateEmail(email);
   if (!safeEmail) {
     return next(new ErrorHandler("Invalid email format!", 400));
+  }
+
+  // Validate password strength
+  if (!validatePassword(password)) {
+    return next(new ErrorHandler("Password must be at least 8 characters long and contain uppercase, lowercase, number and special character!", 400));
   }
 
   const isRegistered = await User.findOne({ email: { $eq: safeEmail } });
