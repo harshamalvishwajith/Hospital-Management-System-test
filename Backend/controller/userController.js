@@ -3,6 +3,15 @@ import ErrorHandler from "../middlewares/errorMiddleware.js";
 import { User } from "../models/userSchema.js";
 import { generateToken } from "../utils/jwtToken.js";
 import cloudinary from "cloudinary";
+import validator from "validator";
+
+// Helper to validate email safely
+const validateEmail = (email) => {
+  if (typeof email !== "string" || !validator.isEmail(email)) {
+    return null;
+  }
+  return validator.normalizeEmail(email);
+};
 
 export const patientRegister = catchAsyncErrors(async (req, res, next) => {
   const {
@@ -30,7 +39,12 @@ export const patientRegister = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Please Fill Full Form!", 400));
   }
 
-  let user = await User.findOne({ email });
+  const safeEmail = validateEmail(email);
+  if (!safeEmail) {
+    return next(new ErrorHandler("Invalid email format!", 400));
+  }
+
+  let user = await User.findOne({ email: { $eq: safeEmail } });
   if (user) {
     return next(new ErrorHandler("User already registered with this email!", 400));
   }
@@ -38,7 +52,7 @@ export const patientRegister = catchAsyncErrors(async (req, res, next) => {
   user = await User.create({
     firstName,
     lastName,
-    email,
+    email: safeEmail,
     phone,
     password,
     gender,
@@ -60,8 +74,12 @@ export const login = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-  const user = await User.findOne({ email }).select("+password");
+  const safeEmail = validateEmail(email);
+  if (!safeEmail) {
+    return next(new ErrorHandler("Invalid email format!", 400));
+  }
 
+  const user = await User.findOne({ email: { $eq: safeEmail } }).select("+password");
   if (!user) {
     return next(new ErrorHandler("Invalid Password or Email!", 400));
   }
@@ -94,20 +112,25 @@ export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Please Fill Full Form!", 400));
   }
 
-  const isRegisterd = await User.findOne({ email });
-  if (isRegisterd) {
+  const safeEmail = validateEmail(email);
+  if (!safeEmail) {
+    return next(new ErrorHandler("Invalid email format!", 400));
+  }
+
+  const isRegistered = await User.findOne({ email: { $eq: safeEmail } });
+  if (isRegistered) {
     return next(
       new ErrorHandler(
-        `${isRegisterd.role} with this email already exists!`,
+        `${isRegistered.role} with this email already exists!`,
         400
       )
     );
   }
 
-  const admin = await User.create({
+  await User.create({
     firstName,
     lastName,
-    email,
+    email: safeEmail,
     phone,
     password,
     gender,
@@ -122,7 +145,7 @@ export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const getAllDoctors = catchAsyncErrors(async (req, res, next) => {
-  const doctors = await User.find({ role: "Doctor" });
+  const doctors = await User.find({ role: { $eq: "Doctor" } });
   res.status(200).json({
     success: true,
     doctors,
@@ -199,7 +222,12 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Please provide full details", 400));
   }
 
-  const isRegistered = await User.findOne({ email });
+  const safeEmail = validateEmail(email);
+  if (!safeEmail) {
+    return next(new ErrorHandler("Invalid email format!", 400));
+  }
+
+  const isRegistered = await User.findOne({ email: { $eq: safeEmail } });
   if (isRegistered) {
     return next(
       new ErrorHandler(
@@ -222,7 +250,7 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
   const doctor = await User.create({
     firstName,
     lastName,
-    email,
+    email: safeEmail,
     phone,
     password,
     gender,
