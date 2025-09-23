@@ -18,8 +18,18 @@
 Each member contributed by identifying and fixing vulnerabilities as follows:
 
 - Member 1 (Name – IT22088246)
-  * Vulnerability 1: [Short description]
-  * Vulnerability 2: [Short description]
+#### Vulnerability 1: Session cookies transmitted without SSL encryption
+- **Issue:** Session cookies were sent without enforcing HTTPS, exposing them to interception.  
+- **Fix:** Configured session cookies with `secure: true` in production, ensuring they are transmitted only over HTTPS.
+
+#### Vulnerability 2: Missing CSRF protection on state-changing requests
+- **Issue:** POST, PUT, and DELETE requests lacked CSRF token validation, allowing attackers to exploit active sessions for unauthorized actions.  
+- **Fix:** Implemented `lusca.csrf()` middleware to enforce CSRF token validation, ensuring only legitimate requests are processed.
+
+#### Additional Fixes Contributed
+- **Cross-Site Scripting (XSS):** Blocked malicious `<script>` tags and JavaScript injection using strict input validation and sanitization.  
+- **NoSQL Injection:** Prevented MongoDB query manipulation by rejecting dangerous operators like `$where`, `$ne`, and `$gt`.  
+- **IP Address Spoofing:** Added validation for IP address formats to accept only legitimate values, preventing spoofing attempts.
 
 - Member 2 (Name – ITXXXXXXXX)
   * Vulnerability 3: [Short description]
