@@ -6,8 +6,12 @@ export const generateToken = (user, message, statusCode, res) => {
   const expireDays = parseInt(process.env.COOKIE_EXPIRE, 10);
   const expires = new Date(Date.now() + (isNaN(expireDays) ? 7 : expireDays) * 24 * 60 * 60 * 1000);
 
-  // configurable sameSite via env
-  const sameSite = process.env.COOKIE_SAMESITE || "Lax";
+  // Validate sameSite against allowed values
+  const allowedSameSite = ["Strict", "Lax", "None"];
+  let sameSite = process.env.COOKIE_SAMESITE;
+  if (!allowedSameSite.includes(sameSite)) {
+    sameSite = "Lax"; // safe default
+  }
 
   const cookieOptions = {
     expires,
@@ -20,7 +24,7 @@ export const generateToken = (user, message, statusCode, res) => {
   const whitelistUser = (userDoc) => {
     const obj = typeof userDoc.toObject === "function" ? userDoc.toObject() : { ...userDoc };
 
-    // Only expose safe fields (expand this list as needed)
+    // Only expose safe fields
     const safeFields = ["_id", "name", "email", "role"];
     return safeFields.reduce((acc, key) => {
       if (obj[key] !== undefined) acc[key] = obj[key];
