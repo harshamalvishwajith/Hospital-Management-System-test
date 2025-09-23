@@ -27,15 +27,19 @@ app.use(
 // Cookie parser
 app.use(cookieParser());
 
-// Session middleware required for CSRF protection
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "your-secret-key",
     resave: false,
     saveUninitialized: true,
-    cookie: { maxAge: 60 * 60 * 1000, httpOnly: true } // 1 hour
+    cookie: {
+      maxAge: 60 * 60 * 1000,      
+      httpOnly: true,               
+      secure: process.env.NODE_ENV === "production"  
+    }
   })
 );
+
 
 // CSRF protection
 app.use(lusca.csrf());
