@@ -8,7 +8,6 @@ const Login = () => {
   const { isAuthenticated, setIsAuthenticated } = useContext(Context);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setconfirmPassword] = useState("");
   const navigateTo = useNavigate();
 
   const handleLogin = async (e) => {
@@ -16,7 +15,7 @@ const Login = () => {
     try {
       const response = await axios.post(
         "http://localhost:4000/api/v1/user/login",
-        { email, password, confirmPassword, role: "Patient" },
+        { email, password, role: "Patient" },
         {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
@@ -56,12 +55,6 @@ const Login = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
-        />
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setconfirmPassword(e.target.value)}
-          placeholder="Confirm Password"
         />
 
         <div

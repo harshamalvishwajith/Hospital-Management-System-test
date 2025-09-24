@@ -43,7 +43,14 @@ const userSchema = new mongoose.Schema({
     password:{
         type: String,
         required:true,
-        minLength: [8, "Password must contain atleat 8 characters!"],
+        minLength: [8, "Password must contain at least 8 characters!"],
+        validate: {
+            validator: function(password) {
+                // Strong password: at least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+                return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
+            },
+            message: "Password must contain at least 8 characters with uppercase, lowercase, number and special character"
+        },
         select: false
     },
     role:{
@@ -62,9 +69,10 @@ const userSchema = new mongoose.Schema({
 
 userSchema.pre("save", async function(next){
     if(!this.isModified("password")){
-        next()
+        return next()
     }
-    this.password = await bcrypt.hash(this.password,10)
+    this.password = await bcrypt.hash(this.password, 12)
+    next()
 })
 
 userSchema.methods.comparePassword = async function (enteredPassword) {
