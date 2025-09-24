@@ -13,14 +13,14 @@ import appointmentRouter from "./router/appointmentRouter.js";
 
 const app = express();
 
-config({ path: "./config/config.env" });
+config();
 
 // CORS setup
 app.use(
   cors({
     origin: [process.env.FRONTEND_PATIENT, process.env.FRONTEND_ADMIN],
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
+    credentials: true,
   })
 );
 
@@ -33,13 +33,12 @@ app.use(
     resave: false,
     saveUninitialized: true,
     cookie: {
-      maxAge: 60 * 60 * 1000,      
-      httpOnly: true,               
-      secure: process.env.NODE_ENV === "production"  
-    }
+      maxAge: 60 * 60 * 1000,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    },
   })
 );
-
 
 // CSRF protection
 app.use(lusca.csrf());
@@ -56,7 +55,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   fileUpload({
     useTempFiles: true,
-    tempFileDir: "/tmp/"
+    tempFileDir: "/tmp/",
   })
 );
 

@@ -4,6 +4,10 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+//this is going tp use the Google OAuth for the registration - IT22005908
+import { GoogleLogin } from "@react-oauth/google";
+import jwtDecode from "jwt-decode";
+
 const Login = () => {
   const { isAuthenticated, setIsAuthenticated } = useContext(Context);
   const [email, setEmail] = useState("");
@@ -38,10 +42,10 @@ const Login = () => {
       <h2>Login In</h2>
       <p>Please Login to Continue</p>
       <p>
-        Welcome to Life Care. Please manage appointments and stay
-        connected with your healthcare provider. Your privacy and security are
-        our top priorities. If you experience any issues, please contact our
-        support team for assistance.
+        Welcome to Life Care. Please manage appointments and stay connected with
+        your healthcare provider. Your privacy and security are our top
+        priorities. If you experience any issues, please contact our support
+        team for assistance.
       </p>
       <form onSubmit={handleLogin}>
         <input
@@ -76,6 +80,26 @@ const Login = () => {
           <button type="submit">Login</button>
         </div>
       </form>
+      <div>
+        <h1>Sign in with Google</h1>
+        <p>Google-powered authentication for a seamless experience.</p>
+        <div className="google-login">
+          <GoogleLogin
+            onSuccess={(credentialResponse) => {
+              toast.success("Login Successful");
+              const user = jwtDecode(credentialResponse.credential);
+              setUser(user);
+              setIsAuthenticated(true);
+            }}
+            onError={() => {
+              toast.error("Login Failed");
+            }}
+            theme="filled_blue"
+            shape="pill"
+            size="large"
+          />
+        </div>
+      </div>
     </div>
   );
 };

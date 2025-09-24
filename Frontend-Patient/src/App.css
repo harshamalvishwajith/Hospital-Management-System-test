@@ -17,12 +17,12 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999; 
+  z-index: 9999;
 }
 
 .loading-gif {
-  width: 100px; 
-  height: 100px; 
+  width: 100px;
+  height: 100px;
 }
 .btn {
   padding: 7px 20px;
@@ -183,8 +183,8 @@ h6 {
   color: gray;
   margin-bottom: 20px;
 }
-.form-component a:hover{
-  color:#40699d;
+.form-component a:hover {
+  color: #40699d;
 }
 .form-component form {
   display: flex;
@@ -233,7 +233,7 @@ h6 {
 .form-component .wrapper .banner:last-child img {
   max-width: 450px;
 }
-button{
+button {
   cursor: pointer;
 }
 .login-form {
@@ -642,4 +642,12 @@ input[type="time"]:before {
 }
 footer .logo-img {
   width: 100%;
+}
+
+/* it22005908 css for the Google Login */
+.google-login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
 }
