@@ -17,18 +17,33 @@ const securityValidator = {
         
         // Check for various XSS patterns (comprehensive)
         const xssPatterns = [
-            /<script[\s\S]*?>[\s\S]*?<\/script>/gi,
-            /<iframe[\s\S]*?>[\s\S]*?<\/iframe>/gi,
-            /<object[\s\S]*?>[\s\S]*?<\/object>/gi,
+            /<script[\s\S]*?>[\s\S]*?<\/\s*script[\s\S]*?>/gi,
+            /<iframe[\s\S]*?>[\s\S]*?<\/\s*iframe[\s\S]*?>/gi,
+            /<object[\s\S]*?>[\s\S]*?<\/\s*object[\s\S]*?>/gi,
             /<embed[\s\S]*?>/gi,
             /<link[\s\S]*?>/gi,
             /<meta[\s\S]*?>/gi,
-            /javascript:/gi,
-            /vbscript:/gi,
-            /data:text\/html/gi,
-            /on\w+\s*=/gi,
-            /expression\s*\(/gi, 
-            /url\s*\(/gi, // CSS url() attacks
+            /<style[\s\S]*?>[\s\S]*?<\/\s*style[\s\S]*?>/gi,
+            /<form[\s\S]*?>/gi,
+            /<input[\s\S]*?>/gi,
+            /<textarea[\s\S]*?>/gi,
+            /<button[\s\S]*?>/gi,
+            /<img[\s\S]*?src[\s\S]*?javascript:/gi,
+            /<[^>]*?\s*javascript\s*:/gi,
+            /<[^>]*?\s*vbscript\s*:/gi,
+            /<[^>]*?\s*data\s*:\s*text\/html/gi,
+            /<[^>]*?\s*on\w+\s*=/gi,
+            /javascript\s*:/gi,
+            /vbscript\s*:/gi,
+            /data\s*:\s*text\/html/gi,
+            /expression\s*\(/gi,
+            /url\s*\(/gi,
+            /import\s*\(/gi,
+            /eval\s*\(/gi,
+            /function\s*\(/gi,
+            /alert\s*\(/gi,
+            /confirm\s*\(/gi,
+            /prompt\s*\(/gi,
         ];
         
         // Check for SQL/NoSQL injection patterns
