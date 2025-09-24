@@ -11,6 +11,7 @@
 
 # Ignore environment config files in Backend
 /Backend/config/config.env
+/Backend/.env 
 
 # Ignore log files
 *.log
