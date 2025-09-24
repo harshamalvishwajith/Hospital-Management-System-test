@@ -3,7 +3,7 @@
 ## Group Members
 1. De Ranasinghe I M R K – IT22088246
 2. Sandanayake S D I D   – IT22898548
-3. Full Name – ITXXXXXXXX
+3. Gunathilaka H A H V – IT22219916
 4. Full Name – ITXXXXXXXX
 
 ---
@@ -44,10 +44,39 @@ Each member contributed by identifying and fixing vulnerabilities as follows:
 - **Impact:** Increases attack surface — tokens can leak via XSS, logs, browser extensions, or intercepted API responses.  
 - **Fix:** Do not return the JWT in the body when using cookies. Return only minimal user info instead.  
 
+## Member 3 – Gunathilaka H A H V (IT22219916)
 
-- Member 3 (Name – ITXXXXXXXX)
-  * Vulnerability 5: [Short description]
-  * Vulnerability 6: [Short description]
+### Vulnerability 5: Insecure File Upload Implementation
+- **Where:** `addNewDoctor` function in `userController.js` and file upload handling in `app.js`
+- **Issues:** 
+  - Only MIME type validation (easily spoofed)
+  - No file size limits (storage exhaustion risk)
+  - No malware scanning capabilities
+  - Temporary files stored in `/tmp/` without proper cleanup
+- **Impact:** Attackers could upload malicious files, exhaust server storage, or bypass security through MIME type spoofing.
+- **Fix:** Implemented comprehensive file upload security including magic number validation, 5MB size limits, basic malware pattern detection, and automatic temporary file cleanup.
+
+### Vulnerability 6: Lack of Upload Rate Limiting
+- **Where:** File upload endpoints lacked proper rate limiting controls
+- **Impact:** Potential for abuse through rapid file uploads leading to DoS attacks or resource exhaustion
+- **Fix:** Implemented specific rate limiting for file uploads (5 uploads per 15 minutes per IP) and enhanced monitoring capabilities.
+
+### Vulnerability 7: Weak Password Security Implementation
+- **Where:** User registration and authentication processes across `userController.js` and frontend components
+- **Issues:**
+  - Inadequate password strength requirements
+  - Potential weak password hashing implementation
+  - Missing password complexity validation
+- **Impact:** Weak passwords make user accounts vulnerable to brute force attacks and credential stuffing
+- **Fix:** Implemented strong password validation requiring uppercase, lowercase, numbers, and special characters with minimum 8 character length, enhanced password hashing security
+
+### Additional Security Enhancements
+- **Magic Number Validation:** Added file signature validation to prevent MIME type spoofing attacks
+- **Automatic Cleanup Service:** Implemented periodic cleanup of old temporary files to prevent storage issues
+- **Enhanced Frontend Validation:** Added client-side file type and size validation with proper user feedback
+- **Secure File Storage:** Enhanced Cloudinary integration with image optimization and organized folder structure
+- **Strong Password Policy:** Enforced complex password requirements with real-time validation feedback
+- **Secure Password Hashing:** Enhanced bcrypt implementation with proper salt rounds and validation
 
 - Member 4 (Name – ITXXXXXXXX)
   * Vulnerability 7: [Short description]
