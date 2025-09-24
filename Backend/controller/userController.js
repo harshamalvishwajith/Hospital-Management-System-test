@@ -3,6 +3,7 @@ import ErrorHandler from "../middlewares/errorMiddleware.js";
 import { User } from "../models/userSchema.js";
 import { generateToken } from "../utils/jwtToken.js";
 import cloudinary from "cloudinary";
+import { validateUploadedFile, cleanupTempFile, sanitizeFilename } from "../utils/fileValidation.js";
 import validator from "validator";
 
 // Helper to validate email safely
@@ -205,10 +206,16 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
   }
   const { doctrAvatar } = req.files;
 
-  const allowedFormats = ["image/png", "image/jpeg", "image/webp"];
-  if (!allowedFormats.includes(doctrAvatar.mimetype)) {
-    return next(new ErrorHandler("File format not supported!", 400));
+  // Comprehensive file validation
+  const validationResult = await validateUploadedFile(doctrAvatar);
+  if (!validationResult.isValid) {
+    // Clean up temporary file if validation fails
+    await cleanupTempFile(doctrAvatar.tempFilePath);
+    return next(new ErrorHandler(validationResult.errors.join(', '), 400));
   }
+
+  // Sanitize filename
+  const sanitizedName = sanitizeFilename(doctrAvatar.name);
 
   const {
     firstName,
@@ -255,14 +262,31 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-  const cloudinaryResponse = await cloudinary.uploader.upload(
-    doctrAvatar.tempFilePath
-  );
-  if (!cloudinaryResponse || cloudinaryResponse.error) {
-    console.error(
-      "Cloudinary Error:",
-      cloudinaryResponse.error || "Unknown Cloudinary Error"
+  let cloudinaryResponse;
+  try {
+    cloudinaryResponse = await cloudinary.uploader.upload(
+      doctrAvatar.tempFilePath,
+      {
+        folder: "doctors_avatars",
+        public_id: `doctor_${Date.now()}_${sanitizedName}`,
+        transformation: [
+          { width: 500, height: 500, crop: "limit" },
+          { quality: "auto:good" },
+          { format: "jpg" }
+        ]
+      }
     );
+    
+    if (!cloudinaryResponse || cloudinaryResponse.error) {
+      throw new Error(cloudinaryResponse.error || "Unknown Cloudinary Error");
+    }
+  } catch (error) {
+    console.error("Cloudinary Error:", error);
+    await cleanupTempFile(doctrAvatar.tempFilePath);
+    return next(new ErrorHandler("Failed to upload image. Please try again.", 500));
+  } finally {
+    // Always cleanup temp file after cloudinary upload
+    await cleanupTempFile(doctrAvatar.tempFilePath);
   }
 
   const doctor = await User.create({

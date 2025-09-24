@@ -51,11 +51,16 @@ app.use(lusca.xssProtection(true));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// File upload
+// File upload with security limits
 app.use(
   fileUpload({
     useTempFiles: true,
     tempFileDir: "/tmp/",
+    limits: { 
+      fileSize: 5 * 1024 * 1024 // 5MB limit
+    },
+    abortOnLimit: true,
+    responseOnLimit: "File size limit exceeded. Maximum file size is 5MB."
   })
 );
 
