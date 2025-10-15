@@ -2,6 +2,7 @@ import express from "express"
 import rateLimit from "express-rate-limit"
 import { addNewAdmin, addNewDoctor, getAllDoctors, getUserDetails, login, logoutAdmin, logoutPatient, patientRegister } from "../controller/userController.js";
 import { isAdminAuthenticated, isPatientAuthenticated } from "../middlewares/auth.js";
+import { fileUploadLimiter } from "../middlewares/uploadLimiter.js";
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ router.get("/admin/me", limiter, isAdminAuthenticated, getUserDetails)
 router.get("/patient/me", limiter, isPatientAuthenticated, getUserDetails)
 router.get("/admin/logout", limiter, isAdminAuthenticated, logoutAdmin)
 router.get("/patient/logout", limiter, isPatientAuthenticated, logoutPatient)
-router.post("/doctor/addnew", limiter, isAdminAuthenticated, addNewDoctor)
+router.post("/doctor/addnew", fileUploadLimiter, isAdminAuthenticated, addNewDoctor)
 
 
 
