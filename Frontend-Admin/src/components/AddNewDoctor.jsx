@@ -36,11 +36,40 @@ const AddNewDoctor = () => {
 
   const handleAvatar = async (e) => {
     const file = e.target.files[0];
+    
+    if (!file) return;
+    
+    // File size validation (5MB limit)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      toast.error("File size exceeds 5MB limit. Please choose a smaller file.");
+      e.target.value = ''; // Clear the input
+      return;
+    }
+    
+    // File type validation
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Invalid file type. Only PNG, JPEG, and WebP images are allowed.");
+      e.target.value = ''; // Clear the input
+      return;
+    }
+    
+    // Additional filename validation
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '').substring(0, 255);
+    if (sanitizedName !== file.name) {
+      toast.warning("Filename contains invalid characters. It will be sanitized during upload.");
+    }
+    
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => {
       setAvatarPreview(reader.result);
       setDoctrAvatar(file);
+    };
+    reader.onerror = () => {
+      toast.error("Error reading file. Please try again.");
+      e.target.value = ''; // Clear the input
     };
   };
 
@@ -100,7 +129,11 @@ const AddNewDoctor = () => {
                   src={avatarPreview ? `${avatarPreview}` : "/docHolder.jpg"}
                   alt="Doctor Avatar"
                 />
-                <input type="file" onChange={handleAvatar} />
+                <input 
+                  type="file" 
+                  accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+                  onChange={handleAvatar} 
+                />
               </div>
 
               <div>

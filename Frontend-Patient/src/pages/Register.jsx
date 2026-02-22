@@ -4,8 +4,13 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+//this is going tp use the Google OAuth for the registration - IT22005908
+import { GoogleLogin } from "@react-oauth/google";
+import jwtDecode from "jwt-decode";
+
 const Register = () => {
-  const { isAuthenticated, setIsAuthenticated } = useContext(Context);
+  const { isAuthenticated, setIsAuthenticated, user, setUser } =
+    useContext(Context);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -14,11 +19,51 @@ const Register = () => {
   const [aadhar, setAadhar] = useState("");
   const [gender, setGender] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setconfirmPassword] = useState("");
 
   const navigateTo = useNavigate();
 
+  // Function to get border color for confirm password field
+  const getConfirmPasswordBorderColor = () => {
+    if (confirmPassword.length === 0) return '';
+    return password === confirmPassword ? 'green' : 'red';
+  };
+
+  // Function to validate password strength
+  const validatePasswordStrength = (password) => {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+    return regex.test(password);
+  };
+
+  // Function to get password border color
+  const getPasswordBorderColor = () => {
+    if (password.length === 0) return '';
+    if (password.length < 8) return 'red';
+    if (!validatePasswordStrength(password)) return 'orange';
+    return 'green';
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
+    
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+    
+    // Check if password is at least 8 characters
+    if (password.length < 8) {
+      toast.error("Password must contain at least 8 characters!");
+      return;
+    }
+
+    // Check password strength
+    if (!validatePasswordStrength(password)) {
+      toast.error("Password must contain uppercase, lowercase, number and special character");
+      return;
+    }
+    
     try {
       const response = await axios.post(
         "http://localhost:4000/api/v1/user/patient/register",
@@ -118,8 +163,51 @@ const Register = () => {
             value={password}
             placeholder="Password"
             onChange={(e) => setPassword(e.target.value)}
+            style={{
+              borderColor: getPasswordBorderColor()
+            }}
+          />
+            
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setconfirmPassword(e.target.value)}
+            placeholder="Confirm Password"
+            style={{
+              borderColor: getConfirmPasswordBorderColor()
+            }}
           />
         </div>
+
+        {password.length > 0 && password.length < 8 && (
+          <p style={{ color: 'red', fontSize: '12px', margin: '5px 0' }}>
+            Password must contain at least 8 characters
+          </p>
+        )}
+
+        {password.length >= 8 && !validatePasswordStrength(password) && (
+          <p style={{ color: 'orange', fontSize: '12px', margin: '5px 0' }}>
+            Password must contain uppercase, lowercase, number and special character (@$!%*?&)
+          </p>
+        )}
+
+        {password.length >= 8 && validatePasswordStrength(password) && (
+          <p style={{ color: 'green', fontSize: '12px', margin: '5px 0' }}>
+            Strong password ✓
+          </p>
+        )}
+
+        {confirmPassword.length > 0 && password !== confirmPassword && (
+          <p style={{ color: 'red', fontSize: '12px', margin: '5px 0' }}>
+            Passwords do not match
+          </p>
+        )}
+
+        {confirmPassword.length > 0 && password === confirmPassword && password.length >= 8 && validatePasswordStrength(password) && (
+          <p style={{ color: 'green', fontSize: '12px', margin: '5px 0' }}>
+            Passwords match ✓
+          </p>
+        )}
 
         <div
           style={{
@@ -140,6 +228,26 @@ const Register = () => {
           <button type="submit">Register</button>
         </div>
       </form>
+      <div>
+        <h1>Sign in with Google</h1>
+        <p>Google-powered authentication for a seamless experience.</p>
+        <div className="google-login">
+          <GoogleLogin
+            onSuccess={(credentialResponse) => {
+              toast.success("Login Successful");
+              const user = jwtDecode(credentialResponse.credential);
+              setUser(user);
+              setIsAuthenticated(true);
+            }}
+            onError={() => {
+              toast.error("Login Failed");
+            }}
+            theme="filled_blue"
+            shape="pill"
+            size="large"
+          />
+        </div>
+      </div>
     </div>
   );
 };

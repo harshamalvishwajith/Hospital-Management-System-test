@@ -1,145 +1,111 @@
+# SE4030 – Secure Software Development Assignment
 
+## Group Members
+1. De Ranasinghe I M R K – IT22088246
+2. Sandanayake S D I D   – IT22898548
+3. Gunathilaka H A H V – IT22219916
+4. Full Name – ITXXXXXXXX
 
-# Hospital Management System - Full Stack Project
+---
 
-This project is a comprehensive **Hospital Management System** featuring a responsive design for both administrators and patients. It includes a backend service and two separate frontend implementations for managing hospital operations and patient interactions.
+## Project Links
+- Original Project Repository: [https://github.com/Fairooz2150/Hospital-Management-System.git]
+- Modified Project Repository (After Fixes): [https://github.com/harshamalvishwajith/Hospital-Management-System-test/security]
 
-## Features
+---
 
-### [Admin Panel:](https://lifecare-administration.netlify.app)
-- **Doctor Management**: Register and manage doctor profiles.
-- **Admin Management**: Add new administrators.
-- **Appointment Management**: View, approve, or reject patient appointments.
-- **Patient Messages**: Read and respond to patient messages.
+## Vulnerabilities Identified and Fixed
+Each member contributed by identifying and fixing vulnerabilities as follows:
 
-### [Patient Portal:](https://lifecare-hospitals.netlify.app)
-- **Registration and Login**: Patients can register and log in.
-- **Appointment Booking**: Schedule appointments with doctors, including patient details and date.
-- **Message Sending**: Send messages to the admin.
-- **Hospital Information**: Learn about Life Care Hospital.
+## Member 1 - De Ranasinghe I M R K (IT22088246)
+  
+### Vulnerability 1: Session cookies transmitted without SSL encryption
+- **Issue:** Session cookies were sent without enforcing HTTPS, exposing them to interception.  
+- **Fix:** Configured session cookies with `secure: true` in production, ensuring they are transmitted only over HTTPS.
 
-## Project Structure
+### Vulnerability 2: Missing CSRF protection on state-changing requests
+- **Issue:** POST, PUT, and DELETE requests lacked CSRF token validation, allowing attackers to exploit active sessions for unauthorized actions.  
+- **Fix:** Implemented `lusca.csrf()` middleware to enforce CSRF token validation, ensuring only legitimate requests are processed.
 
-The project is organized into the following main folders:
+### Additional Fixes Contributed
+- **Cross-Site Scripting (XSS):** Blocked malicious `<script>` tags and JavaScript injection using strict input validation and sanitization.  
+- **NoSQL Injection:** Prevented MongoDB query manipulation by rejecting dangerous operators like `$where`, `$ne`, and `$gt`.  
+- **IP Address Spoofing:** Added validation for IP address formats to accept only legitimate values, preventing spoofing attempts.
 
-- **Backend**: Contains the server-side code for handling API requests, authentication, and database interactions.
-- **Frontend-Admin**: The responsive frontend for hospital administrators.
-- **Frontend-Patient**: The responsive frontend for patients.
+## Member 2 – Sandanayake S D I D (IT22898548) 
 
-### Backend
-The backend is built using Node.js and Express, and it includes:
-- **Dependencies**: `bcrypt`, `cloudinary`, `cookie-parser`, `cors`, `dotenv`, `express`, `express-fileupload`, `jsonwebtoken`, `mongoose`, `validator`.
-- **Features**: Error handling, input validation, token generation, and user schemas.
+### Vulnerability 3: Privilege Escalation in Registration (Client-Controlled Role)
+- **Where:** `userController.js` → `patientRegister` reads `role` from `req.body` and persists it, then logs in the user.  
+- **Impact:** An attacker could register with `role: "Admin"` and receive an `adminToken` via `generateToken(...)`, gaining full admin access.  
+- **Fix:** Ignore client-supplied role. Force `"Patient"` for public registration. Only allow privileged accounts (admins) to create users with elevated roles (e.g., Admin, Doctor).  
 
-### Frontend - Admin
-The admin panel is built with React.js and provides a responsive interface for managing hospital operations.
+### Vulnerability 4: JWT Leakage in Response Body
+- **Where:** `jwtToken.js` returns `{ user, token }` while also setting the auth cookie.  
+- **Impact:** Increases attack surface — tokens can leak via XSS, logs, browser extensions, or intercepted API responses.  
+- **Fix:** Do not return the JWT in the body when using cookies. Return only minimal user info instead.  
 
-### Frontend - Patient
-The patient portal is also built with React.js, offering a responsive design for patient interactions.
+## Member 3 – Gunathilaka H A H V (IT22219916)
 
-## Technologies Used
+### Vulnerability 5: Insecure File Upload Implementation
+- **Where:** `addNewDoctor` function in `userController.js` and file upload handling in `app.js`
+- **Issues:** 
+  - Only MIME type validation (easily spoofed)
+  - No file size limits (storage exhaustion risk)
+  - No malware scanning capabilities
+  - Temporary files stored in `/tmp/` without proper cleanup
+- **Impact:** Attackers could upload malicious files, exhaust server storage, or bypass security through MIME type spoofing.
+- **Fix:** Implemented comprehensive file upload security including magic number validation, 5MB size limits, basic malware pattern detection, and automatic temporary file cleanup.
 
-- **Frontend**: React.js, Bootstrap, Axios
-- **Backend**: Node.js, Express, MongoDB, JWT, Bcrypt
-- **Other**: Cloudinary for image uploads, dotenv for environment variables, cookie-parser for handling cookies.
+### Vulnerability 6: Lack of Upload Rate Limiting
+- **Where:** File upload endpoints lacked proper rate limiting controls
+- **Impact:** Potential for abuse through rapid file uploads leading to DoS attacks or resource exhaustion
+- **Fix:** Implemented specific rate limiting for file uploads (5 uploads per 15 minutes per IP) and enhanced monitoring capabilities.
 
-## Getting Started
+### Vulnerability 7: Weak Password Security Implementation
+- **Where:** User registration and authentication processes across `userController.js` and frontend components
+- **Issues:**
+  - Inadequate password strength requirements
+  - Potential weak password hashing implementation
+  - Missing password complexity validation
+- **Impact:** Weak passwords make user accounts vulnerable to brute force attacks and credential stuffing
+- **Fix:** Implemented strong password validation requiring uppercase, lowercase, numbers, and special characters with minimum 8 character length, enhanced password hashing security
 
-To get started with the project, follow these instructions:
+### Additional Security Enhancements
+- **Magic Number Validation:** Added file signature validation to prevent MIME type spoofing attacks
+- **Automatic Cleanup Service:** Implemented periodic cleanup of old temporary files to prevent storage issues
+- **Enhanced Frontend Validation:** Added client-side file type and size validation with proper user feedback
+- **Secure File Storage:** Enhanced Cloudinary integration with image optimization and organized folder structure
+- **Strong Password Policy:** Enforced complex password requirements with real-time validation feedback
+- **Secure Password Hashing:** Enhanced bcrypt implementation with proper salt rounds and validation
 
-### Prerequisites
+- Member 4 (Name – ITXXXXXXXX)
+  * Vulnerability 7: [Short description]
+  * OAuth/OpenID Connect Flow: [Describe the grant type used and the feature added/updated]
 
-- Node.js and npm (Node Package Manager) installed on your system.
-- A running backend server (see the backend section for setup instructions).
+---
 
-### Installation
+## OAuth/OpenID Connect Implementation
+- Grant Type Implemented: [Authorization Code / Implicit / Client Credentials / PKCE]
+- Identity Provider Used: [Google / Facebook / WSO2 / etc.]
+- Integrated Feature: [Briefly describe the new or updated feature]
 
-1. **Clone the repository:**
+---
 
-   ```bash
-    git clone https://github.com/Fairooz2150/Hospital-Management-System.git
-   ```
-    - First open Hospital-Management-System folder:
-     ```bash
-     cd Hospital-Management-System
-     ```
+## Video Presentation
+YouTube Link: [Insert Video Link Here]
+- Total duration: Maximum 10 minutes
+- Each member’s explanation: Maximum 2.5 minutes
 
-2. **Navigate to each folder and install dependencies:**
+---
 
-   - For Backend:
-     ```bash
-     cd Backend
-     npm install
-     ```
+## Report
+- The detailed PDF report is included in the submission zip file.
+- The report covers: identified vulnerabilities, fixes applied, any unfixed vulnerabilities with reasons, and secure development best practices.
 
-   - For Frontend-Admin:
-     ```bash
-     cd Frontend-Admin
-     npm install
-     ```
+---
 
-   - For Frontend-Patient:
-     ```bash
-     cd Frontend-Patient
-     npm install
-     ```
-
-### Running the Application
-
-
-1. **Start the Backend server:**
-
-   ```bash
-   cd Backend
-   npm run dev
-   ```
-
-2. **Start the Frontend-Admin application:**
-
-   ```bash
-   cd Frontend-Admin
-   npm run dev
-   ```
-
-3. **Start the Frontend-Patient application:**
-
-   ```bash
-   cd Frontend-Patient
-   npm run dev
-   ```
-
-4. **Open your browser and navigate to:**
-   - Admin Panel: [http://localhost:5174](http://localhost:5174)
-   - Patient Portal: [http://localhost:5175](http://localhost:5175)
-
-### Environment Variables
-
-Ensure you have the following environment variables set in your `.env` file for the backend:
-
-- `PORT`: The port number for the backend server.
-- `MONGO_URI`: The MongoDB connection string.
-- `JWT_SECRET_KEY`: Secret key for JWT.
-- `JWT_EXPIRES`: JWT expiration time.
-- `CLOUDINARY_CLOUD_NAME`: Cloudinary cloud name for image storage.
-- `CLOUDINARY_API_KEY`: Cloudinary API key.
-- `CLOUDINARY_API_SECRET`: Cloudinary API secret.
-
-### Creating an Admin User
-
-1. **Register a new patient user** by following the registration process on the Patient Portal.
-2. **Update the user's role** to "Admin" directly in the database:
-   - Open your MongoDB client (e.g., MongoDB Compass or your terminal).
-   - Find the `users` collection in your database.
-   - Locate the user document with the role of "Patient" that you registered.
-   - Update the `role` field from "Patient" to "Admin".
-
-### Contributing
-
-If you'd like to contribute to the project:
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/YourFeature`).
-3. Commit your changes (`git commit -am 'Add some feature'`).
-4. Push to the branch (`git push origin feature/YourFeature`).
-5. Create a new Pull Request.
-
-
+## Notes
+- The selected project is not a well-known deliberately vulnerable app (e.g., DVWA, WebGoat).
+- The last commit date of the original project is earlier than the start date of the semester.
+- A combination of security testing tools and manual analysis was used (e.g., OWASP ZAP, Dependency-Check, SQLMap).
+- Secure coding and engineering best practices have been documented.
